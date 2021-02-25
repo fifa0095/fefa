@@ -19,9 +19,9 @@ function Select(){
 
     // for checking values
     const Start_Value = Array.from(Random_char);
-    console.log(Start_Value);
+    return Start_Value;
 
 }
 
 
-Select();
+module.exports= Select;
