@@ -1,0 +1,18 @@
+extends layout
+
+block content 
+    h1 #{title}
+    form(method='POST', action='/Story/add')
+        #form-group 
+            label Host: 
+            input.form-control(name='Host',type="text")
+        #form-group 
+            label Text1: 
+            input.form-control(name='Text1',type="text")
+        #form-group 
+            label Text2: 
+            input.form-control(name='Text2',type="text")
+        #form-group 
+            label Text3: 
+            input.form-control(name='Text3',type="text")
+        input.btn.btn-primary(type='submit', value ='Submit')

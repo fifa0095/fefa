@@ -1,19 +1,31 @@
 
-//Generating 4 random character
+function GetPermutation(Something){
+    let Permutation = [];
 
-function Select(){
-    //declaring variable for select random character.
-    let Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    if (Something.length == 0) return [];
 
+    if (Something.length ==1) return [Something];
+    
+    for (let i =0; i< Something.length; i++){
+        // Get a first character
+        //ex [A , B , 4 , 7] get an A
+        const char = Something[i];
 
-    //declaring variable for store random character.
-    let Start_Value = []; 
+        //get remaining list after get First character
+        //ex [B , 4 , 7]
+        const remainingSomething = Something.slice(0, i).concat(Something.slice(i+1));
 
+        //throw remaining list to recursion
+        const remainingSomethingPermuted = GetPermutation(remainingSomething);
+        // loop for permutation
+        for (let j =0; j< remainingSomethingPermuted.length; j++){
+            const permutedArray = [char].concat(remainingSomethingPermuted[j]);
 
-    for (var i=0; i<4; i++){
-        // loop for Adding random character to array.
-        Start_Value.push(Alphabet.charAt(Math.floor(Math.random()*Alphabet.length)))
+            Permutation.push(permutedArray);
+        }
+
     }
-
-    alert(Start_Value);
+    return Permutation;
 }
+
+module.exports = Permutation;
