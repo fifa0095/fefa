@@ -52,7 +52,10 @@ function CheckArray(){
     
     //check for Input list has 5 array
     if (sentChar.length === 5){
-        clearInterval(checkIt);
+        button1.disabled = true;
+        button2.disabled = true;
+        button3.disabled = true;
+        button4.disabled = true;
     }
 }
 

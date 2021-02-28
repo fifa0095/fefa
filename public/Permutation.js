@@ -1,7 +1,7 @@
 
 function GetPermutation(Something){
     let Permutation = [];
-
+    
     if (Something.length == 0) return [];
 
     if (Something.length ==1) return [Something];
@@ -23,9 +23,6 @@ function GetPermutation(Something){
 
             Permutation.push(permutedArray);
         }
-
     }
-    return Permutation;
+    return Permutation
 }
-
-module.exports = Permutation;

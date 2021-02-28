@@ -2,3 +2,8 @@ extends layout
 
 block content 
     h1 #{title}
+    form(action='/Story/Get', method="get")
+        #form-group
+        label : Host 
+        input.form-control(type="text", name = "Host")
+        input.btn.btn-primary(type='submit', value ='Submit')

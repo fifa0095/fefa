@@ -48,17 +48,16 @@ app.set('view engine','pug');
 
 //Home Route
 app.get('/', (req,res)=>{
-    Article.find({}, (e, articles)=>{
-        if (e){
-            console.log(e);
-        }else{
-            
-                    res.render('index', {
-                        title : 'Hello'
-                    });
+    /*res.render('index', {
+        title : 'Hello'
+    });*/
+    console.log("Fetch is Worked");
+});
 
-        }
-
+// Go to Game Route
+app.get('/Story/Get', (req, res)=>{
+    res.render('game', {
+        Host_name : req.body.Host
     });
 });
 
@@ -70,7 +69,28 @@ app.get('/Story/add', (req,res)=>{
 });
 
 //Get Single Article
-app.get('/STORY/:id', (req, res)=>{
+//Get 1st Article
+app.get('/STORY/:id/1', (req, res)=>{
+    Article.findById(req.params.id, (e, article)=>{
+        res.render('article',{
+            Text1: Text1,
+            Text2: Text2,
+            Text3: Text3
+        });
+    });
+});
+//Get 2nd Article
+app.get('/STORY/:id/2', (req, res)=>{
+    Article.findById(req.params.id, (e, article)=>{
+        res.render('article',{
+            Text1: Text1,
+            Text2: Text2,
+            Text3: Text3
+        });
+    });
+});
+//Get 3th Article
+app.get('/STORY/:id/3', (req, res)=>{
     Article.findById(req.params.id, (e, article)=>{
         res.render('article',{
             Text1: Text1,

@@ -1,14 +1,18 @@
 extends layout 
-block content 
+block content
+    h1 This Game is Host by #{Host_name}
     p Guess it
     div 
         button#Char1 #{C1}
         button#Char2 #{C2}
         button#Char3 #{C3}
         button#Char4 #{C4}
-    div 
-        button#Submit Submit 
+    div  
+        button(disabled)#Submit Submit 
         button#Reject Reject 
     div 
         p#Element
     script(type="text/javascript", src="./Client.js")
+    script(type="text/javascript", src="./Permutation.js")
+    script(type="text/javascript", src="./req.js")
+    script(type="text/javascript", src="./app.js")
