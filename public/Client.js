@@ -56,6 +56,7 @@ function CheckArray(){
         button2.disabled = true;
         button3.disabled = true;
         button4.disabled = true;
+        button5.disabled = false;
     }
 }
 

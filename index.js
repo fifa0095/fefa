@@ -3,7 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose')
 const Generator = require('./script/Generator')
 
-mongoose.connect('mongodb://localhost/mail');
+mongoose.connect('mongodb://localhost/notekb');
 let db = mongoose.connection;
 
 
@@ -12,6 +12,7 @@ let db = mongoose.connection;
 //Bring in models
 let Article =require('./models/articles');
 const bodyParser = require('body-parser');
+const articles = require('./models/articles');
 
 
 // Check connection
@@ -48,16 +49,25 @@ app.set('view engine','pug');
 
 //Home Route
 app.get('/', (req,res)=>{
-    /*res.render('index', {
-        title : 'Hello'
-    });*/
-    console.log("Fetch is Worked");
+    Article.find({}, (e, articles)=>{
+        if(e){
+            console.log(e);
+        }else{
+            res.render('index', {
+                title : 'Hello',
+                articles : articles
+            });
+        }
+    })
 });
 
 // Go to Game Route
 app.get('/Story/Get', (req, res)=>{
-    res.render('game', {
-        Host_name : req.body.Host
+    Article.findOne({Host : req.params.Host_id}, (e, article)=>{
+        res.render('game', {
+            Host_name : article.Host,
+            Host_ID : article._id
+        });
     });
 });
 
@@ -70,32 +80,29 @@ app.get('/Story/add', (req,res)=>{
 
 //Get Single Article
 //Get 1st Article
+
 app.get('/STORY/:id/1', (req, res)=>{
-    Article.findById(req.params.id, (e, article)=>{
-        res.render('article',{
-            Text1: Text1,
-            Text2: Text2,
-            Text3: Text3
+    Article.findOne({Host : req.params.id}, (e, article)=>{
+        res.render('articles',{
+            Text_body: Text1
         });
     });
+    console.log("Fetch is working");
 });
+
 //Get 2nd Article
 app.get('/STORY/:id/2', (req, res)=>{
     Article.findById(req.params.id, (e, article)=>{
-        res.render('article',{
-            Text1: Text1,
-            Text2: Text2,
-            Text3: Text3
+        res.render('articles',{
+            Text_body: Text2
         });
     });
 });
 //Get 3th Article
 app.get('/STORY/:id/3', (req, res)=>{
     Article.findById(req.params.id, (e, article)=>{
-        res.render('article',{
-            Text1: Text1,
-            Text2: Text2,
-            Text3: Text3
+        res.render('articles',{
+            Text_body: Text3
         });
     });
 });
@@ -114,18 +121,19 @@ app.get('/Game', (req, res)=>{
 
 //Add Submit POST Route
 app.post('/Story/add', (req,res)=>{
-    let articles = new Article();
-    articles.Host = req.body.Host;
-    articles.Text1 = req.body.Text1;
-    articles.Text2 = req.body.Text2;
-    articles.Text3 = req.body.Text3;
+    let article = new Article();
+    article.Host = req.body.Host;
+    article.Text1 = req.body.Text1;
+    article.Text2 = req.body.Text2;
+    article.Text3 = req.body.Text3;
 
-    articles.save( (e)=>{
+    article.save( (e)=>{
         if(e){
             console.log(e);
             return;
         }else{
-            res.redirect('/');
+            res.send(article._id);
+            
         }
     })
 })
