@@ -1,0 +1,76 @@
+<html>
+<title>limited for 606</title>
+
+<head>
+    <center>
+        <style>
+            .popup {
+                position: relative;
+                display: inline-block;
+                cursor: pointer;
+            }
+
+
+            .popup .popuptext {
+
+                visibility: hidden;
+                width: 480px;
+                height: 480px;
+                background-color: rgb(245, 245, 21);
+                color: rgba(219, 14, 31, 0.877)216, 178, 178);
+                text-align: center;
+                border-radius: 6px;
+                padding: 8px 0;
+                position: absolute;
+                z-index: 1;
+                bottom: 125%;
+                left: -160%;
+                margin-left: -80px;
+
+            }
+
+
+            .popup .popuptext::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                margin-left: -5px;
+                border-width: 5px;
+                border-style: solid;
+                border-color: rgb(180, 245, 3) transparent transparent transparent;
+            }
+
+
+            .popup .show {
+                visibility: visible;
+                -webkit-animation: fadeIn 1s;
+                animation: fadeIn 1s;
+            }
+        </style>
+
+    </center>
+</head>
+
+<body style="text-align:center">
+
+    <h2>ของปัจฉิมพิเศษ
+        <span style="color: #ffc000;">By fefa</span>
+    </h2>
+
+    <img src="https://scontent.fkkc2-1.fna.fbcdn.net/v/t1.15752-9/151325811_230876318695561_7883843149193939932_n.jpg?_nc_cat=103&ccb=3&_nc_sid=ae9488&_nc_eui2=AeFPYthIhs5xpkSFv6dVrhmjVyOj7Fm2VCZXI6PsWbZUJs1DirGhQ0bUYW2gfD7VYs0tnN4Rbm86pev7KM9nXWqg&_nc_ohc=b7NsXWzhADUAX_kMQFO&_nc_ht=scontent.fkkc2-1.fna&oh=c8cb0e603c77ebbf2b2073fc61e8144b&oe=605A1D85"
+        height="300" width="400">
+    <h3 style="color:rgb(52, 209, 12);">หมายเหตุ</h3>
+    <p>เนื่องด้วยฟีฟ่านั้น ขี้เกียจทำขอปัจฉิมอย่างมาก <br>จึงได้ทำตัวเว็บไซต์ นี้เพื่อเพื่อนทุกคน<br>
+        โดยเป็นที่เพื่อนต้องกรอกเลขที่ของตัวเองแล้วจะมีข้อความขึ้นครับผม</p>
+    <div class="popup" onclick="myFunction()"><span style="color: #4808f8;">กดตรงนี้ดูสิ!</span>
+
+        <span class="popuptext" id="myPopup"> 
+            <br>มาเรียนบ้างนะเพื่อน ม.6 ยังไม่รู้จะจบไหม<br> #by writer</span>
+    </div>
+
+    <script src = "popup.js"></script>
+
+</body>
+
+</html>
