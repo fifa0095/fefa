@@ -1,0 +1,547 @@
+<title>COA Flow ZQME0010</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one wide swimlane board (4 phases left→right, own horizontal scroll), then issue cards, QAMV vs PLMK, case-2084 timeline */
+:root{
+  --bg:#eaeef2; --surface:#ffffff; --surface-2:#f4f6f9; --ink:#141c26; --muted:#556272; --line:#c5cfda;
+  --z:#3044a6; --z-soft:#e6e9f8; --std:#5b6878; --std-soft:#eef1f5;
+  --bad:#c42b2b; --bad-soft:#fbe7e6; --ok:#17804a; --ok-soft:#e1f3e8; --warn:#9a6300; --warn-soft:#fbf0d9;
+  --f-display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --shadow:0 1px 2px rgba(20,28,38,.06),0 6px 18px rgba(20,28,38,.06);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1319; --surface:#161e28; --surface-2:#1c2632; --ink:#e2e8ef; --muted:#97a3b2; --line:#2d3a49;
+  --z:#93a4ff; --z-soft:#1f2747; --std:#a3afbd; --std-soft:#1c2531;
+  --bad:#ff6f6a; --bad-soft:#3a1c1e; --ok:#4fd28d; --ok-soft:#14321f; --warn:#f1b54d; --warn-soft:#352812;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 20px rgba(0,0,0,.25); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0e1319; --surface:#161e28; --surface-2:#1c2632; --ink:#e2e8ef; --muted:#97a3b2; --line:#2d3a49;
+  --z:#93a4ff; --z-soft:#1f2747; --std:#a3afbd; --std-soft:#1c2531;
+  --bad:#ff6f6a; --bad-soft:#3a1c1e; --ok:#4fd28d; --ok-soft:#14321f; --warn:#f1b54d; --warn-soft:#352812;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 20px rgba(0,0,0,.25); color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:28px;font-weight:700}
+h2{font-size:19px;font-weight:600}
+h3{font-size:15px;font-weight:600}
+p{margin:0}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:72ch}
+header.top{display:flex;flex-direction:column;gap:8px}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:12.5px;color:var(--muted);
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.legend .li{display:flex;align-items:center;gap:7px}
+.sw{width:18px;height:12px;border-radius:3px;border:1.5px solid}
+.sw.std{background:var(--std-soft);border-color:var(--std)}
+.sw.z{background:var(--z-soft);border-color:var(--z)}
+.sw.note{background:var(--warn-soft);border-color:var(--warn);border-style:dashed}
+.ln{width:28px;height:0;border-top:2px solid var(--muted)}
+.ln.exp{border-top:2px dashed var(--ok)}
+.ln.act{border-top:2px solid var(--bad)}
+.ln.gap{border-top:2px dashed var(--muted)}
+
+/* board */
+.scroller{overflow-x:auto;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
+.board{position:relative;min-width:1240px;display:grid;grid-template-columns:1fr 56px 1.18fr 56px 1fr 56px 1fr;padding:18px 18px 26px}
+.lane{display:flex;flex-direction:column;gap:30px;min-width:0;position:relative;z-index:1}
+.lane-h{display:flex;flex-direction:column;gap:2px;padding-bottom:10px;border-bottom:2px solid var(--line);margin-bottom:-6px}
+.lane-h .no{font-family:var(--f-display);font-weight:700;font-size:13px;color:var(--muted)}
+.lane-h h2{font-size:17px}
+.lane-h .kind{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.lane.std .kind{color:var(--std)} .lane.z .kind{color:var(--z)}
+.lane-bg{grid-row:1;align-self:stretch}
+
+.step{position:relative;background:var(--surface);border:1.5px solid var(--std);border-radius:8px;padding:10px 12px 11px;
+  display:flex;flex-direction:column;gap:7px;box-shadow:var(--shadow);transition:box-shadow .15s,outline-color .15s;outline:3px solid transparent;outline-offset:2px}
+.step.z{border-color:var(--z)}
+.step.note{background:var(--warn-soft);border:1.5px dashed var(--warn);box-shadow:none}
+.step + .step::before{content:"";position:absolute;left:50%;top:-29px;height:22px;border-left:2px solid var(--muted);transform:translateX(-1px)}
+.step + .step::after{content:"";position:absolute;left:50%;top:-10px;transform:translateX(-5px);border:5px solid transparent;border-top:6px solid var(--muted);border-bottom:0}
+.step + .step.note::before,.step + .step.note::after,.step.free::before,.step.free::after{display:none}
+.sh{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;padding-right:22px}
+.tc{font-family:var(--f-mono);font-weight:600;font-size:12.5px;padding:1px 6px;border-radius:4px;background:var(--std-soft);color:var(--std)}
+.step.z .tc{background:var(--z-soft);color:var(--z)}
+.st{font-weight:600;font-size:13.5px}
+.step p{font-size:12.8px;color:var(--muted);line-height:1.5}
+.step p b{color:var(--ink);font-weight:600}
+.tbls{display:flex;flex-wrap:wrap;gap:4px}
+.tb{font-family:var(--f-mono);font-size:11.3px;display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:4px;overflow:hidden;white-space:nowrap;background:var(--surface)}
+.tb i{font-style:normal;font-weight:600;padding:0 5px;align-self:stretch;display:flex;align-items:center}
+.tb span{padding:1px 6px 1px 5px}
+.tb.r i{color:var(--muted);background:var(--surface-2);border-right:1px solid var(--line)}
+.tb.w{border-color:var(--ink)}
+.tb.w i{color:var(--surface);background:var(--ink)}
+.tb.bad{border-color:var(--bad)} .tb.bad i{background:var(--bad);color:var(--surface)}
+.tb.good{border-color:var(--ok);border-style:dashed} .tb.good i{background:var(--ok);color:var(--surface)}
+
+.sub{position:relative;border-top:1px dashed var(--line);padding-top:7px;display:flex;flex-direction:column;gap:5px}
+.sub .sl{font-size:12.5px;font-weight:600;padding-right:26px}
+.sub.badzone{background:var(--bad-soft);border:1px solid var(--bad);border-radius:6px;padding:7px 8px;margin-inline:-4px}
+.sub.freeze{background:var(--ok-soft);border:1px solid var(--ok);border-radius:6px;padding:7px 8px;margin-inline:-4px}
+.flag{font-size:12px;font-weight:600}
+.flag.bad{color:var(--bad)} .flag.ok{color:var(--ok)}
+.grp-label{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.04em;margin-bottom:-22px}
+
+/* markers */
+.mk{position:absolute;top:-11px;right:-11px;width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);
+  font-family:var(--f-display);font-weight:700;font-size:13px;color:#fff;cursor:pointer;display:grid;place-items:center;z-index:5;padding:0;
+  box-shadow:0 0 0 0 transparent;transition:transform .12s}
+.sub .mk{top:-4px;right:-4px}
+.sub.badzone .mk,.sub.freeze .mk{top:-11px;right:-11px}
+.mk.bad{background:var(--bad)} .mk.ok{background:var(--ok)}
+.mk.bad{animation:pulse 2.4s ease-out infinite}
+.mk:hover,.mk:focus-visible{transform:scale(1.12)}
+.mk:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 55%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.mk.bad{animation:none}.mk{transition:none}}
+.hl{outline-color:color-mix(in srgb,var(--hlc,var(--bad)) 60%,transparent)!important}
+.sub.hl{outline:3px solid color-mix(in srgb,var(--hlc,var(--bad)) 60%,transparent);outline-offset:2px}
+
+/* overlay */
+svg.wires{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:visible}
+.w{fill:none;stroke-width:2}
+.w.flow{stroke:var(--muted)}
+.w.act{stroke:var(--bad);stroke-width:2.4}
+.w.exp{stroke:var(--ok);stroke-dasharray:6 5}
+.w.gap{stroke:var(--muted);stroke-dasharray:3 5;opacity:.85}
+.w.dim{opacity:.18}
+.ah-flow{fill:var(--muted)} .ah-act{fill:var(--bad)} .ah-exp{fill:var(--ok)}
+.wl{font-family:var(--f-mono);font-size:10.5px;font-weight:600}
+.wl-bg{fill:var(--surface-2)}
+.wl.gap{fill:var(--muted)} .wl.act{fill:var(--bad)} .wl.exp{fill:var(--ok)}
+
+/* popover */
+.pop{position:absolute;z-index:20;width:330px;max-width:calc(100% - 20px);background:var(--surface);border:1.5px solid var(--bad);border-radius:8px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);padding:11px 13px 12px;display:flex;flex-direction:column;gap:6px;font-size:12.8px}
+.pop.ok{border-color:var(--ok)}
+.pop .ph{display:flex;align-items:center;gap:8px}
+.pop .pill{font-family:var(--f-mono);font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;color:#fff}
+.pop .pill.bad{background:var(--bad)} .pop .pill.ok{background:var(--ok)}
+.pop h3{font-size:14px}
+.pop p{color:var(--muted)} .pop p b{color:var(--ink)}
+.pop .x{margin-left:auto;background:none;border:0;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:2px 4px}
+.pop .more{font-size:12px;color:var(--z);background:none;border:0;padding:0;text-align:left;cursor:pointer;font-family:var(--f-body);text-decoration:underline;text-underline-offset:2px}
+
+/* issue cards */
+.issues{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 16px;display:flex;flex-direction:column;gap:9px;
+  border-top:4px solid var(--bad);scroll-margin-top:16px;transition:outline-color .2s;outline:3px solid transparent;outline-offset:2px}
+.card.ok{border-top-color:var(--ok)}
+.card.flash{outline-color:color-mix(in srgb,var(--bad) 55%,transparent)}
+.card.ok.flash{outline-color:color-mix(in srgb,var(--ok) 55%,transparent)}
+.card .ch{display:flex;align-items:center;gap:10px}
+.badge{width:28px;height:28px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--f-display);font-weight:700}
+.badge.bad{background:var(--bad)} .badge.ok{background:var(--ok)}
+.state{font-family:var(--f-mono);font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;margin-left:auto;white-space:nowrap}
+.state.bad{color:var(--bad);background:var(--bad-soft)} .state.ok{color:var(--ok);background:var(--ok-soft)}
+.card dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;font-size:13px}
+.card dt{font-weight:600;color:var(--muted);font-size:12px;padding-top:1px;white-space:nowrap}
+.card dd{margin:0;min-width:0}
+.card .key{background:var(--bad-soft);border-left:3px solid var(--bad);padding:6px 10px;border-radius:0 6px 6px 0;font-weight:600;font-size:13px}
+
+/* bottom pair */
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:14px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.tscroll{overflow-x:auto}
+table.cmp{width:100%;border-collapse:collapse;font-size:12.8px;min-width:420px}
+.cmp th,.cmp td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.cmp thead th{font-family:var(--f-mono);font-size:12px}
+.cmp thead th.q{color:var(--ok)} .cmp thead th.p{color:var(--bad)}
+.cmp tbody th{font-weight:600;color:var(--muted);font-size:12px;white-space:nowrap}
+.cmp tr:last-child td,.cmp tr:last-child th{border-bottom:0}
+.tick{color:var(--ok);font-weight:600} .cross{color:var(--bad);font-weight:600}
+
+.tl{display:grid;grid-template-columns:110px repeat(4,minmax(130px,1fr));min-width:640px;font-size:12.5px}
+.tl > div{padding:8px 8px;border-bottom:1px solid var(--line);border-left:1px solid var(--line)}
+.tl .rh{font-weight:600;color:var(--muted);border-left:0;font-size:12px}
+.tl .th{font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:var(--muted);background:var(--surface-2)}
+.tl .ev{display:flex;flex-direction:column;gap:3px}
+.tl .db{font-family:var(--f-mono);font-size:11.5px}
+.tl .db.good{color:var(--ok)} .tl .db.lost{color:var(--bad);font-weight:600}
+.tl .fix{background:var(--ok-soft)}
+.tl .last{border-bottom:0}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.dot.a{background:var(--warn)} .dot.b{background:var(--z)}
+.foot{font-size:12px;color:var(--muted)}
+
+@media (max-width:860px){.issues,.pair{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){h1{font-size:23px}.card dl{grid-template-columns:minmax(0,1fr)}.card dt{padding-top:4px}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">SAP QM · Certificate of Analysis · ZQME0010 / ZQMF0010 / ZQMF0011</span>
+    <h1>Flow การออก COA ตั้งแต่ GR ถึง Report</h1>
+    <p class="lede">ภาพรวมการทำงานของ inspection lot, Z program ของ QC, การ approve ของ QA และ report รวมผล พร้อมจุดที่เป็นปัญหา กด marker สีแดง/เขียวเพื่อดูสาเหตุและแนวทางแก้ ส่วนไดอะแกรมเลื่อนซ้าย-ขวาได้บนจอเล็ก</p>
+  </header>
+
+  <div class="legend" aria-label="คำอธิบายสัญลักษณ์">
+    <span class="li"><span class="sw std"></span>Standard SAP</span>
+    <span class="li"><span class="sw z"></span>Z program / Z table</span>
+    <span class="li"><span class="tb r"><i>R</i><span>TABLE</span></span>อ่าน</span>
+    <span class="li"><span class="tb w"><i>W</i><span>TABLE</span></span>เขียน</span>
+    <span class="li"><span class="ln"></span>ลำดับ flow</span>
+    <span class="li"><span class="ln act"></span>ที่ program อ่านจริง (ผิด)</span>
+    <span class="li"><span class="ln exp"></span>ที่ควรอ่าน</span>
+    <span class="li"><span class="ln gap"></span>ไม่ได้ผูกกันในระบบ</span>
+    <span class="li"><span class="mk bad" style="position:static;animation:none;width:20px;height:20px;font-size:11px;cursor:default">B</span>ยังเป็นปัญหา</span>
+    <span class="li"><span class="mk ok" style="position:static;width:20px;height:20px;font-size:11px;cursor:default">A</span>แก้แล้ว</span>
+  </div>
+
+  <div class="scroller" id="scroller">
+    <div class="board" id="board">
+      <svg class="wires" id="wires" aria-hidden="true">
+        <defs>
+          <marker id="ah-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-flow" d="M0,0 L10,5 L0,10 z"/></marker>
+          <marker id="ah-act" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-act" d="M0,0 L10,5 L0,10 z"/></marker>
+          <marker id="ah-exp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-exp" d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+        <g id="wireg"></g>
+      </svg>
+
+      <!-- ① -->
+      <section class="lane std" style="grid-column:1">
+        <div class="lane-h"><span class="no">①</span><h2>Production / GR</h2><span class="kind">Standard SAP</span></div>
+
+        <div class="step" id="s-gr">
+          <div class="sh"><span class="tc">MIGO 101</span><span class="st">GR จาก production order</span></div>
+          <p>ระบบสร้าง inspection lot <b>origin 04</b> อัตโนมัติ</p>
+          <div class="tbls"><span class="tb w"><i>W</i><span>QALS</span></span></div>
+          <p><code>QALS-HERKUNFT = 04</code><br><code>QALS-GUELTIGAB</code> = key date ใช้เลือก version ของ QP</p>
+        </div>
+
+        <div class="step" id="s-copy" data-issue="B">
+          <div class="sh"><span class="tc">auto</span><span class="st">Copy characteristic จาก QP</span></div>
+          <div class="sub" id="r-plmk">
+            <span class="sl">QP (Inspection Plan) version ตาม GUELTIGAB</span>
+            <div class="tbls"><span class="tb r"><i>R</i><span>PLKO</span></span><span class="tb r"><i>R</i><span>PLMK</span></span></div>
+          </div>
+          <div class="sub freeze" id="r-qamv" data-issue="B">
+            <span class="sl">Freeze ไว้ที่ lot (ไม่เปลี่ยนแม้ QP ถูกแก้ทีหลัง)</span>
+            <div class="tbls"><span class="tb w"><i>W</i><span>QAMV</span></span></div>
+          </div>
+        </div>
+
+        <div class="step" id="s-res">
+          <div class="sh"><span class="tc">QE51 / QE01</span><span class="st">QC บันทึกผล</span></div>
+          <div class="tbls"><span class="tb w"><i>W</i><span>QASE</span></span><span class="tb w"><i>W</i><span>QAMR</span></span></div>
+          <p><b>QASE</b> ค่าแต่ละตัว (single value)<br><b>QAMR</b> mean / min / max ต่อ characteristic</p>
+        </div>
+
+        <div class="step free note" id="s-qpnow" data-issue="B">
+          <div class="sh"><span class="tc">QP02</span><span class="st">ภายหลัง: แก้ QP ด้วย change number</span></div>
+          <p>valid-from ตั้ง<b>ย้อนหลัง 20.08</b> ขณะที่ lot มี key date <b>26.08</b><br>→ PLMK version ใหม่ (Rev 3) มีผลครอบวันที่ของ lot</p>
+          <div class="tbls" id="r-plmknow"><span class="tb w"><i>W</i><span>PLMK (ZAEHL ใหม่)</span></span><span class="tb w"><i>W</i><span>ZQME0010_TA04</span></span></div>
+        </div>
+      </section>
+
+      <!-- ② -->
+      <section class="lane z" style="grid-column:3">
+        <div class="lane-h"><span class="no">②</span><h2>QC ออก COA</h2><span class="kind">Z program · ZQME0010</span></div>
+
+        <div class="step z" id="s-get">
+          <div class="sh"><span class="tc">ZQME0010</span><span class="st">เปิดจอ · get_data</span></div>
+          <div class="tbls"><span class="tb r"><i>R</i><span>QALS</span></span><span class="tb r"><i>R</i><span>ZQME0010_TA03</span></span></div>
+          <p>โหลดข้อมูล COA ของ lot เข้า work area บนจอ (ค้างอยู่จนกว่าจะ refresh)</p>
+        </div>
+
+        <span class="grp-label">ปุ่มบนจอ · ลำดับใช้งานปกติ</span>
+
+        <div class="step z" id="s-save" data-issue="A">
+          <button class="mk ok" data-mk="A" aria-label="จุด A แก้แล้ว">A</button>
+          <div class="sh"><span class="tc">Save</span><span class="st">save_coa</span></div>
+          <p>บันทึก analyst, test date ฯลฯ ถ้าเป็น <b>rev ใหม่</b> จะ reset ค่า approve</p>
+          <div class="tbls"><span class="tb w"><i>W</i><span>ZQME0010_TA03</span></span></div>
+          <p class="flag ok">✓ เช็คว่า DB approve แล้วแต่จอยังไม่ approve → popup ให้ refresh, ไม่ save</p>
+        </div>
+
+        <div class="step z" id="s-appr" data-issue="A D">
+          <button class="mk bad" data-mk="D" aria-label="ปัญหา D">D</button>
+          <div class="sh"><span class="tc">Approve</span><span class="st">approve_coa</span></div>
+          <p>popup login ซ้ำ → ออก <b>cert_no = MAX+1</b> (เช่น 2026-2084) → <code>approve_flag = X</code>, <code>approve_by = sy-uname</code></p>
+          <div class="tbls"><span class="tb r"><i>R</i><span>ZQME0010_TA03</span></span><span class="tb w"><i>W</i><span>ZQME0010_TA03</span></span></div>
+          <div class="sub" style="padding-right:0">
+            <button class="mk ok" data-mk="A" aria-label="จุด A แก้แล้ว" style="top:-4px;right:-4px">A</button>
+            <p class="flag ok" style="padding-right:24px">✓ ถ้า DB มี cert_no แล้ว → ใช้เลขเดิม</p>
+          </div>
+        </div>
+
+        <div class="step z" id="s-print" data-issue="B C">
+          <div class="sh"><span class="tc">Print</span><span class="st">FM ZFM_ZQMF0010</span></div>
+          <div class="sub">
+            <span class="sl">ข้อมูล COA และผู้ approve</span>
+            <div class="tbls"><span class="tb r"><i>R</i><span>ZQME0010_TA03</span></span></div>
+            <p>cert_no, ชื่อ / วันที่ approve</p>
+          </div>
+          <div class="sub">
+            <span class="sl">ค่าผลตรวจ</span>
+            <div class="tbls"><span class="tb r"><i>R</i><span>QASE</span></span><span class="tb r"><i>R</i><span>QAMR</span></span></div>
+          </div>
+          <div class="sub badzone" id="r-spec" data-issue="B">
+            <button class="mk bad" data-mk="B" aria-label="ปัญหา B">B</button>
+            <span class="sl">spec + long text ของ characteristic</span>
+            <div class="tbls"><span class="tb bad"><i>R</i><span>PLMK</span></span><span class="tb bad"><i>R</i><span>READ_TEXT QSS / QM</span></span></div>
+            <p class="flag bad">อ่าน QP ตัวปัจจุบัน ไม่ใช่ QAMV ที่ lot freeze ไว้</p>
+          </div>
+          <div class="sub badzone" id="r-conv" data-issue="C">
+            <button class="mk bad" data-mk="C" aria-label="ปัญหา C">C</button>
+            <span class="sl">แปลงตัวเลข</span>
+            <p><code>CEVA_CONVERT_FLOAT_TO_CHAR</code> ใช้ format ของ <code>USR01-DCPFM</code></p>
+            <p class="flag bad">"2,15" → dump CONVT_NO_NUMBER</p>
+          </div>
+        </div>
+
+        <div class="step z" id="s-sf" data-issue="B">
+          <button class="mk bad" data-mk="B" aria-label="ปัญหา B">B</button>
+          <div class="sh"><span class="tc">Smartform ZQMF0010</span><span class="st">พิมพ์ COA</span></div>
+          <p>Rev เลือกจาก TA04 ตาม <code>QALS-GUELTIGAB</code> → ได้ <b>Rev 3</b> ทั้งที่ควรเป็น Rev 2</p>
+          <div class="tbls"><span class="tb r"><i>R</i><span>ZQME0010_TA04</span></span><span class="tb w"><i>W</i><span>ZQMF0010_TA01</span></span></div>
+          <p>TA01 = log การพิมพ์</p>
+        </div>
+      </section>
+
+      <!-- ③ -->
+      <section class="lane std" style="grid-column:5">
+        <div class="lane-h"><span class="no">③</span><h2>QA approve</h2><span class="kind">Standard SAP</span></div>
+
+        <div class="step" id="s-tr">
+          <div class="sh"><span class="tc">MIGO 311</span><span class="st">Stock transfer</span></div>
+          <p>ย้ายเข้า storage location <b>WFG0 / WFG1</b> → ระบบสร้าง lot <b>origin 08</b> (material + batch เดียวกับ lot 04)</p>
+          <div class="tbls"><span class="tb w"><i>W</i><span>QALS</span></span></div>
+          <p><code>HERKUNFT = 08</code>, <code>MATNR</code>, <code>CHARG</code></p>
+        </div>
+
+        <div class="step" id="s-ud">
+          <div class="sh"><span class="tc">QA11</span><span class="st">Usage Decision</span></div>
+          <p>QA ทำ UD code <b>'A'</b> · ดูย้อนหลังได้ใน <b>QA13</b></p>
+          <div class="tbls"><span class="tb w"><i>W</i><span>QAVE</span></span></div>
+          <p><code>VCODE</code>, <code>VNAME</code>, <code>VDATUM</code></p>
+        </div>
+
+        <div class="step note" id="s-gapnote">
+          <div class="sh"><span class="st" style="color:var(--warn)">หมายเหตุ: ไม่ผูกกัน</span></div>
+          <p>QC approve (<b>TA03</b>) กับ QA UD (<b>QAVE</b>) ไม่มีการเช็คระหว่างกัน<br>→ <b>พิมพ์ COA ได้แม้ QA ยังไม่ทำ UD</b></p>
+        </div>
+      </section>
+
+      <!-- ④ -->
+      <section class="lane z" style="grid-column:7">
+        <div class="lane-h"><span class="no">④</span><h2>Report</h2><span class="kind">Z report · ZQMF0011</span></div>
+
+        <div class="step z" id="s-r1">
+          <div class="sh"><span class="tc">ZQMF0011</span><span class="st">อ่าน COA ที่ QC approve</span></div>
+          <div class="tbls"><span class="tb r"><i>R</i><span>ZQME0010_TA03</span></span></div>
+          <p><code>approve_flag = 'X'</code> (จาก ②)</p>
+        </div>
+        <div class="step z" id="s-r2">
+          <div class="sh"><span class="tc">JOIN</span><span class="st">หา lot 08</span></div>
+          <div class="tbls"><span class="tb r"><i>R</i><span>QALS</span></span></div>
+          <p><code>HERKUNFT = 08</code> ด้วย <code>MATNR + CHARG</code></p>
+        </div>
+        <div class="step z" id="s-r3">
+          <div class="sh"><span class="tc">JOIN</span><span class="st">หา UD ของ QA</span></div>
+          <div class="tbls"><span class="tb r"><i>R</i><span>QAVE</span></span></div>
+          <p><code>VCODE = 'A'</code> (จาก ③)</p>
+        </div>
+        <div class="step z" id="s-r4">
+          <div class="sh"><span class="tc">ALV</span><span class="st">แสดงผลแถวเดียว</span></div>
+          <p>QC approve | QA approve ในแถวเดียวกัน ถ้า QA ยังไม่ทำ UD ฝั่ง QA จะว่าง</p>
+          <p class="mono" style="font-size:11px;color:var(--muted);line-height:1.6">cert 2026-2084 · QC: User B<br>lot 08 · UD A · QA user</p>
+        </div>
+      </section>
+
+      <div class="pop" id="pop" hidden role="dialog" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <section class="issues" aria-label="รายละเอียดจุดปัญหา">
+    <article class="card ok" id="card-A">
+      <div class="ch"><span class="badge ok">A</span><h3>Save ทับ cert_no ที่เพิ่ง approve</h3><span class="state ok">แก้แล้ว</span></div>
+      <dl>
+        <dt>จุด</dt><dd>ZQME0010 · <code>save_coa</code> / <code>approve_coa</code> → <code>ZQME0010_TA03</code></dd>
+        <dt>สาเหตุ</dt><dd>User เปิดจอค้างไว้ก่อนมีคน approve แล้วมากด Save ทีหลัง <code>MODIFY</code> ทั้งแถวจาก work area บนจอ ทำให้ <code>cert_no</code> / <code>approve_flag</code> / <code>approve_by</code> ใน DB ถูกเขียนเป็นค่าว่าง (เคส cert 2026-2084 หาย ดู timeline ด้านล่าง)</dd>
+        <dt>แก้</dt><dd>Save: ถ้า DB approve แล้วแต่จอยังไม่ approve → popup ให้ refresh และไม่ save<br>Approve: ถ้า DB มี <code>cert_no</code> แล้ว → ใช้เลขเดิม ไม่ออก MAX+1 ซ้ำ</dd>
+      </dl>
+    </article>
+
+    <article class="card" id="card-B">
+      <div class="ch"><span class="badge bad">B</span><h3>COA ใช้ spec / Rev ของ QP ตัวปัจจุบัน</h3><span class="state bad">ยังเป็นปัญหา</span></div>
+      <p class="key">lot freeze QP ไว้ใน QAMV แล้ว แต่ Z program ไปอ่าน QP ตัวปัจจุบัน</p>
+      <dl>
+        <dt>จุด</dt><dd>Print · <code>ZFM_ZQMF0010</code> อ่าน <code>PLMK</code> + <code>READ_TEXT</code> (object <code>QSS</code>, id <code>QM</code>) และ Rev จาก <code>ZQME0010_TA04</code></dd>
+        <dt>สาเหตุ</dt><dd>QP ถูกแก้ด้วย change number ที่ตั้ง valid-from ย้อนหลังเป็น <b>20.08</b> ส่วน lot มี key date <code>GUELTIGAB</code> = <b>26.08</b> เมื่ออ่าน QP ตาม key date ตอนพิมพ์ จึงได้ version ใหม่ ทั้งที่ characteristic ที่ lot ใช้จริงถูก copy ไว้ใน QAMV ตั้งแต่ตอนสร้าง lot</dd>
+        <dt>ผล</dt><dd>COA แสดง text และ <b>Rev 3</b> ทั้งที่ควรเป็น <b>Rev 2</b> และ spec บน COA อาจไม่ตรงกับที่ใช้ตัดสินผลจริง</dd>
+        <dt>แนวทาง</dt><dd>อ่าน spec จาก <code>QAMV</code> ของ lot (key <code>PRUEFLOS</code> + <code>VORGLFNR</code> + <code>MERKNR</code>) แทน PLMK และหา Rev จาก version ที่ lot ใช้ ไม่ใช่จาก QP ปัจจุบัน ส่วน long text ต้องเช็คว่าจะใช้ text ที่ copy มากับ lot หรือ snapshot เก็บไว้ตอนออก COA</dd>
+      </dl>
+    </article>
+
+    <article class="card" id="card-C">
+      <div class="ch"><span class="badge bad">C</span><h3>Decimal format ของ user ทำให้ dump</h3><span class="state bad">ยังเป็นปัญหา</span></div>
+      <dl>
+        <dt>จุด</dt><dd>Print · แปลงค่าผลด้วย <code>CEVA_CONVERT_FLOAT_TO_CHAR</code></dd>
+        <dt>สาเหตุ</dt><dd>FM ใช้ decimal format ของ user (<code>USR01-DCPFM</code>) user ที่ตั้ง decimal เป็น <code>,</code> จะได้ <code>"2,15"</code> แล้ว program นำไปใช้เป็นตัวเลขต่อ</dd>
+        <dt>ผล</dt><dd>Short dump <code>CONVT_NO_NUMBER</code> พิมพ์ COA ไม่ได้เฉพาะบาง user (เครื่องคนอื่นพิมพ์ได้ปกติ)</dd>
+        <dt>แนวทาง</dt><dd>อย่าแปลง char ที่ขึ้นกับ user กลับเป็นตัวเลข ใช้ค่า numeric ตรงๆ หรือ format ด้วย string template <code>|{ lv_val DECIMALS = n }|</code> ซึ่งใช้ raw format (<code>.</code> เสมอ) ไม่ขึ้นกับ user</dd>
+      </dl>
+    </article>
+
+    <article class="card" id="card-D">
+      <div class="ch"><span class="badge bad">D</span><h3>approve_by ไม่ใช่คนที่ยืนยันตัวตน</h3><span class="state bad">ยังเป็นปัญหา</span></div>
+      <dl>
+        <dt>จุด</dt><dd>Approve · <code>approve_coa</code> → <code>ZQME0010_TA03</code></dd>
+        <dt>สาเหตุ</dt><dd>popup เช็ค password ของ user ที่พิมพ์เข้ามา แต่บันทึก <code>approve_by = sy-uname</code> (คนที่ login SAP อยู่) ถ้าคนพิมพ์กับคน login เป็นคนละคน ชื่อบน COA จะไม่ตรงกับคนที่ยืนยันจริง</dd>
+        <dt>ผล</dt><dd><code>ZQME0010_TA03</code> ไม่มี field <code>update_by</code> / เวลาแก้ไข จึงหาไม่ได้ว่าใครเป็นคนแก้แถว (เช่นเคส A)</dd>
+        <dt>แนวทาง</dt><dd>บันทึก user จาก popup ที่ผ่านการตรวจ หรือบังคับให้ user ใน popup ต้องเท่ากับ <code>sy-uname</code> และเพิ่ม <code>update_by</code> / <code>update_date</code> / <code>update_time</code> (หรือเปิด table log / change document)</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="pair">
+    <div class="panel">
+      <h2>QAMV vs PLMK</h2>
+      <p class="foot">ต้นเหตุของจุด B: สอง table นี้ดูเหมือนเก็บ characteristic เหมือนกัน แต่มีอายุต่างกัน</p>
+      <div class="tscroll">
+        <table class="cmp">
+          <thead><tr><th></th><th class="q">QAMV · freeze ตอนสร้าง lot</th><th class="p">PLMK · QP ปัจจุบัน</th></tr></thead>
+          <tbody>
+            <tr><th>เป็นของ</th><td>inspection lot</td><td>Inspection Plan (master data)</td></tr>
+            <tr><th>Key</th><td><code>PRUEFLOS</code> + <code>VORGLFNR</code> + <code>MERKNR</code></td><td><code>PLNTY</code>/<code>PLNNR</code>/<code>PLNKN</code>/<code>MERKNR</code> + <code>ZAEHL</code> (version ตาม change number)</td></tr>
+            <tr><th>เกิดเมื่อ</th><td>copy จาก PLMK ตอนสร้าง lot</td><td>สร้าง/แก้ใน QP01/QP02</td></tr>
+            <tr><th>แก้ QP ทีหลัง</th><td><span class="tick">ไม่เปลี่ยน</span></td><td><span class="cross">เปลี่ยน</span> รวมถึง valid-from ย้อนหลัง</td></tr>
+            <tr><th>สิ่งที่ lot ใช้ตัดสินผล</th><td><span class="tick">ใช่</span></td><td><span class="cross">ไม่จำเป็นต้องตรง</span></td></tr>
+            <tr><th>ZFM_ZQMF0010</th><td>ควรอ่าน</td><td><span class="cross">อ่านอยู่ตอนนี้</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Timeline เคส cert 2026-2084</h2>
+      <p class="foot">จุด A: work area บนจอของ User A เก่ากว่า DB แล้ว Save ทั้งแถวทับ</p>
+      <div class="tscroll">
+        <div class="tl">
+          <div class="th rh"></div>
+          <div class="th">t1</div><div class="th">t2</div><div class="th">t3</div><div class="th">t4</div>
+
+          <div class="rh"><span class="dot a"></span>User A</div>
+          <div class="ev">เปิดจอ ZQME0010<br><span class="db">จอ: cert_no = ''</span></div>
+          <div class="ev">เปิดจอค้างไว้</div>
+          <div class="ev"><b>กด Save</b><br><code>MODIFY</code> ทั้งแถวจากจอ</div>
+          <div class="ev"></div>
+
+          <div class="rh"><span class="dot b"></span>User B</div>
+          <div class="ev"></div>
+          <div class="ev"><b>กด Approve</b><br>ได้ cert 2026-2084</div>
+          <div class="ev"></div>
+          <div class="ev"></div>
+
+          <div class="rh">DB TA03</div>
+          <div class="db">cert_no = ''<br>approve_flag = ''</div>
+          <div class="db good">cert_no = 2026-2084<br>approve_flag = X</div>
+          <div class="db lost">cert_no = ''<br>approve_flag = ''</div>
+          <div class="db lost">2084 หาย<br>ไม่มีใครรู้ว่าใครแก้ (D)</div>
+
+          <div class="rh last fix">หลังแก้ A</div>
+          <div class="last fix"></div>
+          <div class="last fix"></div>
+          <div class="last fix ev"><b>Save ถูกบล็อก</b><br>popup ให้ refresh ก่อน</div>
+          <div class="last fix ev">Approve ซ้ำใช้เลขเดิม 2026-2084</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  const ISSUES={
+    A:{ok:true,title:"Save ทับ cert_no ที่ approve แล้ว",body:"User A เปิดจอค้าง (cert ยังว่าง) → User B Approve ได้ 2026-2084 → User A กด Save → <b>MODIFY ทั้งแถว</b> จากจอ ทำให้ cert_no / approve ใน DB เป็นค่าว่าง<br><b>แก้แล้ว:</b> Save เช็ค DB ก่อน ถ้า approve แล้วให้ refresh และไม่ save; Approve ใช้ cert_no เดิมถ้ามีแล้ว",hl:["s-save","s-appr"]},
+    B:{ok:false,title:"อ่าน QP ปัจจุบัน แทน QAMV",body:"<b>lot freeze QP ไว้ใน QAMV แล้ว แต่ Z program ไปอ่าน QP ตัวปัจจุบัน</b><br>change number ตั้ง valid-from ย้อนหลัง 20.08 ส่วน lot key date 26.08 → อ่าน PLMK / TA04 ตาม key date ได้ version ใหม่ → COA ขึ้น text และ <b>Rev 3</b> ทั้งที่ควรเป็น <b>Rev 2</b>",hl:["r-spec","s-sf","r-qamv","s-qpnow"]},
+    C:{ok:false,title:"Decimal format ของ user → dump",body:"<code>CEVA_CONVERT_FLOAT_TO_CHAR</code> ใช้ <code>USR01-DCPFM</code> ของ user ที่ตั้ง decimal เป็น <code>,</code> จะได้ \"2,15\" แล้วนำไปใช้เป็นตัวเลข → <b>CONVT_NO_NUMBER</b>",hl:["r-conv"]},
+    D:{ok:false,title:"approve_by ≠ คนที่ใส่ password",body:"popup เช็ค password ของ user ที่พิมพ์ แต่บันทึก <code>approve_by = sy-uname</code> (คนที่ login อยู่)<br>TA03 ไม่มี <code>update_by</code> → หาไม่ได้ว่าใครเป็นคนแก้",hl:["s-appr"]}
+  };
+  const board=document.getElementById('board'), g=document.getElementById('wireg'), svg=document.getElementById('wires'), pop=document.getElementById('pop');
+  const NS='http://www.w3.org/2000/svg';
+  // [from, to, kind, label, issue]
+  const WIRES=[
+    ['s-res','s-get','flow'],
+    ['r-qamv','r-spec','exp','ควรอ่าน','B'],
+    ['r-plmknow','r-spec','act','อ่านจริง','B'],
+    ['s-sf','s-tr','flow'],
+    ['s-appr','s-ud','gap','✕ ไม่ผูก'],
+    ['s-ud','s-r3','flow']
+  ];
+  function rel(el){const b=board.getBoundingClientRect(),r=el.getBoundingClientRect();return{l:r.left-b.left,r:r.right-b.left,t:r.top-b.top,b:r.bottom-b.top,cy:(r.top+r.bottom)/2-b.top}}
+  function draw(){
+    svg.setAttribute('width',board.scrollWidth);svg.setAttribute('height',board.scrollHeight);
+    g.textContent='';
+    WIRES.forEach(([f,t,k,label,iss])=>{
+      const a=document.getElementById(f),b=document.getElementById(t); if(!a||!b)return;
+      const A=rel(a),B=rel(b);
+      // anchor to the step box edge for sub-rows so lines leave the card border
+      const fa=a.closest('.step'),tb=b.closest('.step');
+      const x1=rel(fa).r, x2=rel(tb).l-2, y1=A.cy, y2=B.cy, mx=(x1+x2)/2;
+      const p=document.createElementNS(NS,'path');
+      p.setAttribute('d',`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+      p.setAttribute('class','w '+k); if(iss)p.dataset.issue=iss;
+      if(k!=='gap')p.setAttribute('marker-end',`url(#ah-${k==='flow'?'flow':k})`);
+      g.appendChild(p);
+      if(label){
+        const L=p.getTotalLength(),pt=p.getPointAtLength(k==='act'?L*0.72:k==='exp'?L*0.3:L/2);
+        const tx=document.createElementNS(NS,'text');tx.setAttribute('class','wl '+k);tx.setAttribute('x',pt.x);tx.setAttribute('y',pt.y+3.5);tx.setAttribute('text-anchor','middle');tx.textContent=label;
+        g.appendChild(tx);
+        const bb=tx.getBBox(),bg=document.createElementNS(NS,'rect');
+        bg.setAttribute('x',bb.x-3);bg.setAttribute('y',bb.y-1);bg.setAttribute('width',bb.width+6);bg.setAttribute('height',bb.height+2);bg.setAttribute('rx',3);bg.setAttribute('class','wl-bg');
+        g.insertBefore(bg,tx);
+      }
+    });
+  }
+  let pinned=null;
+  function clearHl(){document.querySelectorAll('.hl').forEach(e=>e.classList.remove('hl'));g.querySelectorAll('.w').forEach(w=>w.classList.remove('dim'));}
+  function show(btn,key,pin){
+    const it=ISSUES[key]; clearHl();
+    it.hl.forEach(id=>{const e=document.getElementById(id);if(e){e.classList.add('hl');e.style.setProperty('--hlc',it.ok?'var(--ok)':'var(--bad)')}});
+    if(key==='B')g.querySelectorAll('.w').forEach(w=>{if(w.dataset.issue!=='B')w.classList.add('dim')});
+    pop.className='pop'+(it.ok?' ok':'');
+    pop.innerHTML=`<div class="ph"><span class="pill ${it.ok?'ok':'bad'}">${key} · ${it.ok?'แก้แล้ว':'ปัญหา'}</span><h3>${it.title}</h3>${pin?'<button class="x" aria-label="ปิด">×</button>':''}</div><p>${it.body}</p><button class="more" data-go="${key}">ดูสาเหตุและแนวทางแก้แบบเต็ม ↓</button>`;
+    pop.hidden=false;
+    const r=rel(btn),W=pop.offsetWidth,H=pop.offsetHeight,bw=board.clientWidth;
+    let left=r.r+10; if(left+W>bw-8)left=r.l-W-10; if(left<8)left=8;
+    let top=r.t-6; if(top+H>board.scrollHeight-8)top=board.scrollHeight-H-8;
+    pop.style.left=left+'px';pop.style.top=Math.max(8,top)+'px';
+  }
+  function hide(){if(pinned)return;pop.hidden=true;clearHl();}
+  document.querySelectorAll('.mk[data-mk]').forEach(btn=>{
+    const k=btn.dataset.mk;
+    btn.addEventListener('mouseenter',()=>{if(!pinned)show(btn,k,false)});
+    btn.addEventListener('mouseleave',hide);
+    btn.addEventListener('focus',()=>{if(!pinned)show(btn,k,false)});
+    btn.addEventListener('blur',()=>setTimeout(()=>{if(!pop.contains(document.activeElement))hide()},0));
+    btn.addEventListener('click',e=>{e.stopPropagation(); if(pinned===btn){pinned=null;hide();return;} pinned=btn; show(btn,k,true);});
+  });
+  pop.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(e.target.closest('.x')){pinned=null;hide();}
+    const go=e.target.closest('[data-go]');
+    if(go){const c=document.getElementById('card-'+go.dataset.go);pinned=null;hide();
+      c.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+      c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),1600);}
+  });
+  document.addEventListener('click',()=>{if(pinned){pinned=null;hide();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!pop.hidden){const b=pinned;pinned=null;hide();b&&b.focus();}});
+  draw();
+  if(window.ResizeObserver)new ResizeObserver(draw).observe(board); else addEventListener('resize',draw);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
+})();
+</script>
